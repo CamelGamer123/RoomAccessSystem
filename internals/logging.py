@@ -2,8 +2,9 @@
 This module contains all logging related code for the project and wraps the logging module for extra functionality.
 """
 
-from logging import FileHandler, StreamHandler, getLogger, Formatter, DEBUG, INFO, WARNING, ERROR, CRITICAL, \
+from logging import StreamHandler, getLogger, Formatter, DEBUG, INFO, WARNING, ERROR, CRITICAL, \
     LoggerAdapter
+from logging.handlers import TimedRotatingFileHandler
 from os import getcwd, path, mkdir
 from datetime import datetime
 from sys import stdout
@@ -78,7 +79,7 @@ class ColourCodedFormatter(Formatter):
     A formatter that adds colour coding to the log messages.
     """
 
-    def __init__(self, fmt=None, datefmt=None, style='%',
+    def __init__(self, fmt=None, datefmt=None, style="%",
                  colourCoding: dict = None
                  ):
         super().__init__(fmt, datefmt, style)
@@ -144,12 +145,12 @@ def createLogger(
     if logFileName is None:
         logFileName = ""
 
-    if not path.exists(Path(f'{getcwd()}\\Logs')):
-        mkdir(Path(f'{getcwd()}\\Logs'))
+    if not path.exists(Path(f"{getcwd()}\\Logs")):
+        mkdir(Path(f"{getcwd()}\\Logs"))
 
     # Check if the logging directory exists, if not, create it
-    if not path.exists(Path(f'{getcwd()}\\Logs\\{loggingDirectory}')):
-        mkdir(Path(f'{getcwd()}\\Logs\\{loggingDirectory}'))
+    if not path.exists(Path(f"{getcwd()}\\Logs\\{loggingDirectory}")):
+        mkdir(Path(f"{getcwd()}\\Logs\\{loggingDirectory}"))
 
     match level.lower():
         case "debug":
@@ -163,7 +164,7 @@ def createLogger(
         case "critical":
             level = CRITICAL
         case _:
-            raise ValueError('Invalid level specified')
+            raise ValueError("Invalid level specified")
 
     logger = getLogger(name)  # Sets the logger's name
     logger.setLevel(level)  # Sets the logger's level
@@ -174,11 +175,12 @@ def createLogger(
 
     if handlers is None:
         handlers = [
-            FileHandler(
+            TimedRotatingFileHandler(
                 Path(
-                    f'{getcwd()}\\Logs\\{loggingDirectory}\\{logFileName}{datetime.now().strftime("%d.%m.%Y")}.log'
+                    f"{getcwd()}\\Logs\\{loggingDirectory}\\{logFileName}"
                 ),
-                encoding='utf-8'
+                encoding="utf-8",
+                when="midnight"
             ),  # Creates the file handler for the logger
             StreamHandler(stdout)  # Creates the stream handler for the logger
         ]
@@ -187,7 +189,7 @@ def createLogger(
     formatter = Formatter(formatString)
 
     for handler in handlers:
-        if not doColour or isinstance(handler, FileHandler):
+        if not doColour or isinstance(handler, TimedRotatingFileHandler):
             handler.setFormatter(formatter)
             logger.addHandler(handler)
             pass
@@ -198,5 +200,5 @@ def createLogger(
 
     # A logger adapter is used here to allow for the logger name to be included in the log messages. This is useful
     # when multiple loggers are used in the same project.
-    logger = LoggerAdapter(logger, {'loggerName': name})
+    logger = LoggerAdapter(logger, {"loggerName": name})
     return logger
