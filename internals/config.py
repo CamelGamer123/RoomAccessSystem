@@ -3,7 +3,7 @@ This module contains the `Config` class, which is used to store all configuratio
 """
 
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Any
 from json import load, dump
 
 from watchdog.events import FileSystemEventHandler
@@ -35,6 +35,27 @@ class Configuration:
         self.filePath = configPath
 
         self.logger.info("Configuration class finished initialising")
+
+    @property
+    def host(self):
+        """
+        The host to run the server on.
+
+        Returns:
+            str: The host to run the server on.
+        """
+        return self.getValue("host")
+
+    @property
+    def hostPort(self):
+        """
+        The port to run the server on.
+
+        Returns:
+            int: The port to run the server on.
+        """
+        return self.getValue("hostPort")
+
 
     """
     ========================================================================================================================
